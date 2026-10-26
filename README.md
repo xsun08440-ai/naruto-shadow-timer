@@ -66,14 +66,14 @@ Android 启动器由 Java 编写，通过 Intent 深链启动或停止 AScript �
 
 打开 [GitHub Releases](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest)，下载：
 
-- **<code>替身计时器.apk</code>**：Android 桌面启动器。
-- **<code>替身计时器.as</code>**：AScript 识别工程包。
+- **<code>naruto-shadow-timer.apk</code>**：Android 桌面启动器。
+- **<code>shadow_timer.as</code>**：AScript 识别工程包。
 
 ### 首次配置
 
-1. 安装 **AScript 4.0.12 或更新版本**，并在 AScript 中导入 <code>替身计时器.as</code>。导入后工程名应为 <code>shadow_timer</code>。
+1. 安装 **AScript 4.0.12 或更新版本**，并在 AScript 中导入 <code>shadow_timer.as</code>。导入后工程名应为 <code>shadow_timer</code>。
 2. 在 Android 系统设置中为 AScript 开启**无障碍服务、悬浮窗和屏幕录制/图色权限**。屏幕采集权限按系统提示授权；若支持按应用采集，可选择游戏应用。
-3. 安装并打开 <code>替身计时器.apk</code>。
+3. 安装并打开 <code>naruto-shadow-timer.apk</code>。
 4. 进入游戏对局或训练场，点击**“启动计时器并进入游戏”**；若希望留在当前应用，选择**“只启动计时器”**。
 5. 左上与右上悬浮层分别显示两侧识别状态和剩余时间。点击**“停止计时器”**可停止脚本并关闭悬浮层。
 
@@ -114,4 +114,5 @@ app_preview.png              启动器界面图
 <div align="center">
 <b>简体中文</b> · <a href="README_EN.md">Read in English</a>
 </div>
+
 
