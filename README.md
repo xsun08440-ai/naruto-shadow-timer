@@ -101,7 +101,6 @@ as_project/
 ├─ build.as             # AScript 工程配置（无需额外 pip 安装）
 └─ res/ui/timer.html    # 左右计时器悬浮窗 UI（HTML/CSS/JS）
 app_src/                # 手机启动器 App 源码（Java，无第三方依赖）
-app_build/              # App 构建中间文件与签名 key
 tools/
 ├─ check_detector.py       # 用参考截图离线查看每个槽位的状态和亮度证据
 ├─ test_state_machine.py   # 回归测试：增加不触发、连续减少、左右独立
@@ -111,6 +110,8 @@ tools/
 替身计时器.as              # 可导入 AScript 的工程包
 替身计时器.apk             # 已安装的手机桌面 App
 ```
+
+`app_build/` 中的构建中间文件和签名密钥不包含在仓库中。
 
 ## 识别原理
 
