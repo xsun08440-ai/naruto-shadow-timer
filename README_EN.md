@@ -1,96 +1,117 @@
+<div align="center">
+
 # Naruto Mobile · Left/Right Substitution Timer
 
-[简体中文](README.md) | [English](README_EN.md)
+<p><b>A computer-vision HUD detector with an independent cooldown state machine</b></p>
 
-An **AScript + OpenCV/NumPy** utility that reads substitution pips from the top of the phone screen and tracks each side independently. When either side loses a pip, its corner overlay starts a 15-second countdown. A later pip loss on that same side restarts its timer.
+<p><a href="README.md">简体中文</a> · <a href="README_EN.md">English</a></p>
+<p><a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest">Download Android APK</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer">Browse source</a></p>
+<p><code>Python</code> <code>OpenCV</code> <code>NumPy</code> <code>AScript Android API</code> <code>Java</code> <code>WebView</code></p>
 
-- **Screen pixels only:** no game-memory reads, process injection, modification, or simulated taps.
-- **Runs with accessibility and screen-capture permissions:** the overlay is touch-through so it does not block gameplay.
-- **Adapts to pip colors:** detects both gold and blue pips on either side.
-- **Independent sides:** left and right counts, detection state, and countdowns do not affect each other.
-- **Increases do not trigger:** pip increases only update the observed count. A decrease must be confirmed for two consecutive frames before it starts a timer.
-- **Handles effects and occlusion:** compares each pip's brightness with its local background. If all four pips on one side cannot be classified clearly, that side's reading is skipped.
+<img src="preview.png" alt="In-match HUD and independent left/right timer overlays" width="820">
 
-## Device and project status
+</div>
 
-The app has been installed on a PLF110 phone with AScript 4.0.12:
+---
 
-- AScript project: `shadow_timer`
-- Android app package: `com.shadowtimer`
-- Screen: `2392 × 1080`, landscape
-- Floating timers: top-left and top-right
-- Log: `/sdcard/airscript/model/shadow_timer/shadow_timer.log`
+## Overview
 
-![Timer running in a match](preview.png)
+This project provides real-time visual detection for the Naruto Mobile HUD. It captures the top region of the Android display, classifies substitution pips on both sides, and starts a 15-second countdown only for the side whose count decreases. A touch-through overlay renders each side's status independently.
 
-## Android launcher app
+Recognition, temporal validation, timer state, and UI rendering are separate components. The detector is not tied to a single phone model: pip locations use normalized screen coordinates, with parameter sets for standard and team/training HUD layouts. Coordinate and threshold calibration is available for different display ratios or HUD revisions.
 
-The launcher APK is included at [`替身计时器.apk`](替身计时器.apk). It can start the timer and optionally open Naruto Mobile. The launcher offers:
+| Vision | State processing | Android presentation |
+| --- | --- | --- |
+| ROI capture, color masks, local luminance features | Consecutive-frame confirmation, isolated side state machines | WebView overlay, 15-second countdown |
+| OpenCV + NumPy | Python / AScript | Java launcher + HTML/CSS/JS |
 
-- **Start timer and open game:** starts the `shadow_timer` AScript project, then opens the game.
-- **Start timer only:** starts the floating timers and stays in the current app.
-- **Stop timer:** stops the AScript script and closes the floating overlay.
+## Architecture and implementation
 
-![Android launcher app](app_preview.png)
+~~~mermaid
+flowchart LR
+    A[Android screen capture] --> B[Top HUD ROI]
+    B --> C[OpenCV / NumPy feature extraction]
+    C --> D[Slot classifier: lit / dark / uncertain]
+    D --> E[Temporal debounce and state machine]
+    E --> F[WebWindow.call bridge]
+    F --> G[WebView timer overlay<br/>HTML / CSS / JavaScript]
+    H[Java launcher] --> I[AScript project deep link]
+    I --> A
+~~~
 
-The APK is a lightweight launcher. The recognition engine still runs in AScript, so AScript and its accessibility, overlay, and screen-capture permissions must remain available. Building a standalone APK would require the AScript developer publishing flow or a native rewrite of the recognition logic.
+### Vision pipeline
 
-## Behavior and detection notes
+1. **Region of interest (ROI):** Capture only the top ~18% of each frame to reduce unnecessary pixel processing.
+2. **Layout selection:** Describe four pip slots per side with normalized coordinates; select the standard or team layout from the HUD slot distribution.
+3. **Color features:** Use BGR channel relationships to extract gold and blue candidate pixels and calculate their ratio inside each diamond-shaped slot.
+4. **Relative luminance classification:** Compare the 75th-percentile brightness inside a slot with the median brightness of its local background to classify it as <code>lit</code>, <code>dark</code>, or <code>uncertain</code>. A side is accepted only when all four slots are unambiguous.
+5. **Temporal debounce:** Require the same pip count in two consecutive frames before updating state, reducing transient errors from flashes, occlusion, and animation.
 
-- The app waits one second after entering a match to avoid false decreases during loading or character-switch animations.
-- A timer continues through temporary HUD occlusion, flashes, and pip-count increases. It ends after 15 seconds or when the script stops.
-- The detector handles both standard 1v1 HUD positions and the inward-shifted positions used in 3v3/training layouts.
-- Each side is accepted only when all four pips are confidently classified as lit or dark. An unclear side is skipped without changing its count or starting a timer.
-- Every confirmed decrease restarts only that side's 15-second timer.
-- The Python script updates the HTML overlay through `WebWindow.call()`. The countdown animation runs in the WebView with `requestAnimationFrame`.
+### State machine and timers
 
-Regression fixtures and scripts are in `tools/`. They cover pip increases, consecutive decreases, independent sides, occlusion, and difficult brightness cases. Tests are included in the repository but have not been run as part of this upload.
+Each side maintains its own observation baseline, stable-frame counter, and validity state. If one side is occluded or ambiguous, only that side pauses state updates; the other side continues independently.
 
-## Setup
+- A decrease of 1–2 pips starts that side's 15-second countdown. A later decrease restarts only that timer.
+- An increase synchronizes the observation baseline but does not start or reset a running timer.
+- A change greater than 2 pips in one observation is treated as a HUD transition: synchronize the baseline without triggering a timer.
+- The UI countdown continues while the HUD is briefly unavailable and returns to ready when it expires.
 
-1. Install and open **AScript** on the phone.
-2. Grant AScript accessibility, floating-window, and screen-capture/color-detection permissions. For screen capture, select Naruto Mobile if Android offers the per-app option.
-3. Open Naruto Mobile and enter a match or training mode.
-4. Open **替身计时器** and tap **Start timer and open game**. Use **Start timer only** to remain in the current app. For debugging, the project can also be run from the AScript Web IDE/project list.
-5. The two overlays show the left and right timers independently:
-   - `待命 / 监控中`: watching for a pip decrease;
-   - `15.0 秒 / 冷却中`: that side is counting down;
-   - `可用 / READY`: the 15-second timer has completed.
-6. Stop the script in AScript to close the overlays. Android may request screen-capture permission again after a phone restart.
+### Android UI and launcher
+
+The AScript project sends state events to the HTML overlay through <code>WebWindow.call()</code>. JavaScript <code>requestAnimationFrame</code> drives the countdown in the WebView, avoiding frequent Python-to-JavaScript calls. The floating window uses touch-through mode so it does not intercept gameplay input.
+
+The Android launcher is written in Java. Intent deep links start or stop the AScript project, and the launcher provides **Start timer and open game**, **Start timer only**, and **Stop timer** actions. **The APK is a launcher, not the recognition engine**; detection logic and overlay resources are packaged in the AScript project.
+
+## Download and installation
+
+Open [GitHub Releases](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest) and download:
+
+- **<code>替身计时器.apk</code>**: Android launcher.
+- **<code>替身计时器.as</code>**: AScript recognition project package.
+
+### First-time setup
+
+1. Install **AScript 4.0.12 or later**, then import <code>替身计时器.as</code>. The imported project should be named <code>shadow_timer</code>.
+2. In Android settings, grant AScript **Accessibility, floating-window, and screen-capture/color-detection permissions**. Follow the screen-capture prompt; if per-app capture is available, select the game.
+3. Install and open <code>替身计时器.apk</code>.
+4. Enter a match or training mode and tap **Start timer and open game**. Choose **Start timer only** to stay in the current app.
+5. The top-left and top-right overlays display each side's recognition status and remaining time. Tap **Stop timer** to stop the script and close the overlays.
+
+You can also import the project package and run it directly from the AScript project list. Android may request screen-capture permission again after a device restart.
+
+## Adaptation and diagnostics
+
+Normalized screen coordinates reduce dependence on a specific resolution. Current detector parameters target the Naruto Mobile HUD in standard and team/training layouts. If recognition becomes unstable after a display-ratio change or HUD update:
+
+1. Capture a match screenshot and inspect slot classifications and brightness evidence with <code>tools/check_detector.py</code>.
+2. Adjust <code>PIP_SLOTS</code>, <code>TEAM_SLOTS</code>, <code>PIP_Y</code>, and related coordinate parameters in <code>as_project/__init__.py</code>.
+3. Calibrate classifier thresholds such as <code>PIP_PRESENT_MIN</code>, <code>LIT_DIFF</code>, and <code>DARK_DIFF_MAX</code> based on the diagnostic output.
+
+The <code>tools/</code> directory also contains state-machine and frame-regression scripts for checking known edge cases after detector changes.
 
 ## Repository layout
 
-```text
-as_project/                 AScript project and floating timer UI
-app_src/                    Android launcher source (Java)
-tools/                      Detector utilities, regression scripts, and fixtures
+~~~text
+as_project/                 AScript Python recognition logic and overlay UI
+  __init__.py                ROI capture, slot classification, state machine, UI bridge
+  res/ui/timer.html          WebView overlay
+app_src/                     Android Java launcher source
+tools/                       Detector diagnostics, regression scripts, and fixtures
 替身计时器.as                 Importable AScript project package
-替身计时器.apk               Android launcher APK
-preview.png                 In-game timer screenshot
-app_preview.png             Launcher screenshot
-```
+替身计时器.apk               Android launcher package
+preview.png                  Project runtime preview
+app_preview.png              Launcher UI preview
+~~~
 
-The local `app_build/` directory contains generated build intermediates and a signing key. It is intentionally excluded from the repository.
+## Scope
 
-## How detection works
+- Input comes from Android screen capture. The project does not read or modify game memory, inject code into the game process, or automate gameplay actions.
+- It requires Android, the AScript runtime, and the relevant system permissions. Current recognition parameters target this game's HUD; other games or major UI revisions require recalibration.
+- Intended for learning computer vision and Android automation interfaces. Follow the game's terms and preserve fair play.
 
-1. Capture only the top 18% of the screen: `screen.capture_cv(0, 0, width, height * 0.18)`.
-2. Check four normalized pip positions on each side. Both gold and blue pip colors are accepted.
-3. For each slot, compare the colored-pixel ratio and the brightness inside the pip with the brightness of the local background. Ambiguous readings are marked `uncertain` and skipped.
-4. Confirm a decrease when two consecutive frames agree. Only decreases start or restart a timer; increases only synchronize the observed count.
-5. Keep left and right state separate: a decrease on one side calls `HUD.trigger()` for that side only.
+---
 
-## Changing phones or screen resolution
+<div align="center">
+<a href="README.md">简体中文</a> · <b>English</b>
+</div>
 
-Normalized coordinates should work on landscape phones with a similar aspect ratio (about 2.215:1). If detection needs adjustment:
-
-1. Capture a match screenshot with AScript.
-2. Run `tools/check_detector.py` to inspect the four pip slots on each side.
-3. Adjust `PIP_Y`, `PIP_HALF_H`, or the normalized x positions in `PIP_SLOTS` in `as_project/__init__.py`.
-
-`PIP_PRESENT_MIN` controls how many colored pixels are needed to recognize a pip. `LIT_ABS_V`, `LIT_ABS_DIFF`, `LIT_DIFF`, and `LIT_RATIO` control lit-pip detection; `DARK_V_MAX` and `DARK_DIFF_MAX` control dark-pip detection.
-
-## Notes
-
-- This project is for learning and personal assistance. Follow the game's terms of service; do not use it for commercial boosting, cheating, or disrupting fair play.
-- The project does not read or modify game memory, inject into the game process, or automate gameplay actions.
