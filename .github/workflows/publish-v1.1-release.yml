@@ -1,4 +1,4 @@
-name: Publish v1.1 Android release
+name: Normalize v1.1 release asset names
 
 on:
   push:
@@ -10,29 +10,20 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  rename-assets:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Upload APK and AScript project to GitHub Release
+      - name: Upload clear asset filenames
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cat > "$RUNNER_TEMP/release-notes.md" <<'RELEASE_NOTES'
-          ## 简体中文
-          - 下载并安装 `替身计时器.apk`。
-          - 在 AScript 4.0.12 或更新版本中导入 `替身计时器.as`。
-          - 按 README 开启无障碍、悬浮窗和屏幕采集权限。
-
-          ## English
-          - Install `替身计时器.apk` on Android.
-          - Import `替身计时器.as` in AScript 4.0.12 or later.
-          - Grant Accessibility, overlay, and screen-capture permissions as described in the README.
-          RELEASE_NOTES
-          gh release create v1.1 \
-            "替身计时器.apk" \
-            "替身计时器.as" \
+          cp "替身计时器.apk" "naruto-shadow-timer.apk"
+          cp "替身计时器.as" "shadow_timer.as"
+          gh release upload v1.1 \
+            "naruto-shadow-timer.apk" \
+            "shadow_timer.as" \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "替身计时器 v1.1 | Naruto Mobile Timer" \
-            --notes-file "$RUNNER_TEMP/release-notes.md"
+            --clobber
+          gh release delete-asset v1.1 default.apk --yes --repo "$GITHUB_REPOSITORY"
+          gh release delete-asset v1.1 default.as --yes --repo "$GITHUB_REPOSITORY"
