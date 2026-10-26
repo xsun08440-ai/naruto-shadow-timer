@@ -1,0 +1,38 @@
+name: Publish v1.1 Android release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - README_EN.md
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload APK and AScript project to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > "$RUNNER_TEMP/release-notes.md" <<'RELEASE_NOTES'
+          ## 简体中文
+          - 下载并安装 `替身计时器.apk`。
+          - 在 AScript 4.0.12 或更新版本中导入 `替身计时器.as`。
+          - 按 README 开启无障碍、悬浮窗和屏幕采集权限。
+
+          ## English
+          - Install `替身计时器.apk` on Android.
+          - Import `替身计时器.as` in AScript 4.0.12 or later.
+          - Grant Accessibility, overlay, and screen-capture permissions as described in the README.
+          RELEASE_NOTES
+          gh release create v1.1 \
+            "替身计时器.apk" \
+            "替身计时器.as" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "替身计时器 v1.1 | Naruto Mobile Timer" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"
