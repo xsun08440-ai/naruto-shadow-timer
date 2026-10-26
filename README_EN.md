@@ -66,14 +66,14 @@ The Android launcher is written in Java. Intent deep links start or stop the ASc
 
 Open [GitHub Releases](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest) and download:
 
-- **<code>替身计时器.apk</code>**: Android launcher.
-- **<code>替身计时器.as</code>**: AScript recognition project package.
+- **<code>naruto-shadow-timer.apk</code>**: Android launcher.
+- **<code>shadow_timer.as</code>**: AScript recognition project package.
 
 ### First-time setup
 
-1. Install **AScript 4.0.12 or later**, then import <code>替身计时器.as</code>. The imported project should be named <code>shadow_timer</code>.
+1. Install **AScript 4.0.12 or later**, then import <code>shadow_timer.as</code>. The imported project should be named <code>shadow_timer</code>.
 2. In Android settings, grant AScript **Accessibility, floating-window, and screen-capture/color-detection permissions**. Follow the screen-capture prompt; if per-app capture is available, select the game.
-3. Install and open <code>替身计时器.apk</code>.
+3. Install and open <code>naruto-shadow-timer.apk</code>.
 4. Enter a match or training mode and tap **Start timer and open game**. Choose **Start timer only** to stay in the current app.
 5. The top-left and top-right overlays display each side's recognition status and remaining time. Tap **Stop timer** to stop the script and close the overlays.
 
@@ -114,4 +114,5 @@ app_preview.png              Launcher UI preview
 <div align="center">
 <a href="README.md">简体中文</a> · <b>English</b>
 </div>
+
 
