@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>替身计时器</title>
+<style>
+  :root {
+    --left: #ffc23d;
+    --left-soft: rgba(255, 194, 61, .22);
+    --right: #4dd7ff;
+    --right-soft: rgba(77, 215, 255, .20);
+    --panel: rgba(7, 12, 21, .82);
+    --muted: rgba(226, 238, 255, .55);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    font-family: "OPPOSans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #fff;
+    user-select: none;
+  }
+
+  .hud {
+    position: fixed;
+    top: 14.2vh;
+    width: 10.6vw;
+    height: 7.7vh;
+    border-radius: 1.5vh;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.055), rgba(255,255,255,0) 42%),
+      var(--panel);
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 1.2vh 3.2vh rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08);
+    overflow: hidden;
+    opacity: .72;
+    transition: opacity .18s ease, border-color .18s ease, box-shadow .18s ease;
+    contain: layout style paint;
+  }
+
+  .hud.valid { opacity: 1; }
+
+  #left  { left: 0.7vw;  border-color: rgba(255, 194, 61, .36); }
+  #right { right: 0.7vw; border-color: rgba(77, 215, 255, .36); }
+
+  #left.valid  { border-color: rgba(255, 194, 61, .68); box-shadow: 0 1.2vh 3.2vh rgba(0,0,0,.42), 0 0 2.6vh rgba(255,170,30,.17), inset 0 1px 0 rgba(255,255,255,.10); }
+  #right.valid { border-color: rgba(77, 215, 255, .62); box-shadow: 0 1.2vh 3.2vh rgba(0,0,0,.42), 0 0 2.6vh rgba(40,180,255,.16), inset 0 1px 0 rgba(255,255,255,.10); }
+
+  .side-strip {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0.42vw;
+    border-radius: 1.5vh 0 0 1.5vh;
+  }
+  #left  .side-strip { background: var(--left); box-shadow: 0 0 1.6vh var(--left); }
+  #right .side-strip { background: var(--right); box-shadow: 0 0 1.6vh var(--right); }
+
+  .content {
+    position: absolute;
+    left: 1.22vw;
+    right: 0.95vw;
+    top: 0.5vh;
+    bottom: 0.72vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: .42vw;
+    height: 1.75vh;
+    white-space: nowrap;
+  }
+
+  .side-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.28vw;
+    height: 1.28vw;
+    border-radius: .36vw;
+    font-size: .74vw;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+  #left  .side-tag { color: #2a1b00; background: var(--left); box-shadow: 0 0 1vh var(--left-soft); }
+  #right .side-tag { color: #001d29; background: var(--right); box-shadow: 0 0 1vh var(--right-soft); }
+
+  .caption {
+    color: var(--muted);
+    font-size: .72vw;
+    letter-spacing: .08vw;
+  }
+
+  .pips {
+    display: flex;
+    align-items: center;
+    gap: .28vw;
+    margin-left: auto;
+  }
+  .pip {
+    width: .44vw;
+    height: .44vw;
+    transform: rotate(45deg);
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: .05vw;
+    transition: background .12s ease, box-shadow .12s ease;
+  }
+  #left  .pip.on { background: var(--left); box-shadow: 0 0 .6vh var(--left); border-color: transparent; }
+  #right .pip.on { background: var(--right); box-shadow: 0 0 .6vh var(--right); border-color: transparent; }
+
+  .readout {
+    display: flex;
+    align-items: baseline;
+    gap: .36vw;
+    height: 3.1vh;
+    margin-top: .12vh;
+    white-space: nowrap;
+  }
+
+  .time {
+    font-size: 2.15vw;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -.03vw;
+    font-variant-numeric: tabular-nums;
+    color: #f4f8ff;
+    text-shadow: 0 .2vh .7vh rgba(0,0,0,.5);
+  }
+  #left  .hud.active .time { color: #ffe3a1; }
+  #right .hud.active .time { color: #c9f3ff; }
+
+  .unit {
+    font-size: .72vw;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: .04vw;
+  }
+
+  .state {
+    margin-left: auto;
+    font-size: .7vw;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: .04vw;
+  }
+  .hud.ready .state { color: #74f0b1; }
+  .hud.active .state { color: rgba(255,255,255,.82); }
+
+  .track {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: .42vh;
+    background: rgba(255,255,255,.075);
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    width: 100%;
+    transform-origin: left center;
+    transform: scaleX(0);
+    opacity: 0;
+    transition: opacity .15s ease;
+  }
+  #left  .bar { background: linear-gradient(90deg, #ff9d18, var(--left)); box-shadow: 0 0 1vh var(--left); }
+  #right .bar { background: linear-gradient(90deg, #168fe8, var(--right)); box-shadow: 0 0 1vh var(--right); }
+  .hud.active .bar { opacity: 1; }
+</style>
+</head>
+<body>
+  <div id="left" class="hud">
+    <div class="side-strip"></div>
+    <div class="content">
+      <div class="head">
+        <span class="side-tag">左</span>
+        <span class="caption">替身冷却</span>
+        <span class="pips" id="left-pips"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
+      </div>
+      <div class="readout">
+        <span class="time" id="left-time">待命</span>
+        <span class="unit" id="left-unit"></span>
+        <span class="state" id="left-state">等待识别</span>
+      </div>
+    </div>
+    <div class="track"><div class="bar" id="left-bar"></div></div>
+  </div>
+
+  <div id="right" class="hud">
+    <div class="side-strip"></div>
+    <div class="content">
+      <div class="head">
+        <span class="side-tag">右</span>
+        <span class="caption">替身冷却</span>
+        <span class="pips" id="right-pips"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span>
+      </div>
+      <div class="readout">
+        <span class="time" id="right-time">待命</span>
+        <span class="unit" id="right-unit"></span>
+        <span class="state" id="right-state">等待识别</span>
+      </div>
+    </div>
+    <div class="track"><div class="bar" id="right-bar"></div></div>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DURATION_MS = 15000;
+  var sides = {
+    left:  { deadline: 0, active: false, charges: 0, valid: false, el: null },
+    right: { deadline: 0, active: false, charges: 0, valid: false, el: null }
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  function setPips(side, count) {
+    var wrap = $(side + "-pips");
+    var pips = wrap.getElementsByClassName("pip");
+    for (var i = 0; i < pips.length; i++) {
+      if (i < count) pips[i].classList.add("on");
+      else pips[i].classList.remove("on");
+    }
+  }
+
+  function setValid(side, valid, count) {
+    var s = sides[side];
+    s.valid = !!valid;
+    s.charges = count;
+    s.el.classList.toggle("valid", s.valid);
+    if (typeof count === "number") setPips(side, count);
+    if (!s.valid) {
+      if (!s.active) {
+        s.deadline = 0;
+        s.el.classList.remove("active", "ready");
+        $(side + "-time").textContent = "待命";
+        $(side + "-unit").textContent = "";
+        $(side + "-state").textContent = "等待识别";
+        $(side + "-bar").style.transform = "scaleX(0)";
+      } else {
+        // 识别暂时被特效遮挡：保留正在走的倒计时，只把卡片变暗
+        $(side + "-state").textContent = "冷却中";
+      }
+    } else if (!s.active) {
+      $(side + "-state").textContent = "监控中";
+    }
+  }
+
+  function trigger(side, durationMs, charges) {
+    var s = sides[side];
+    if (!s) return;
+    s.active = true;
+    s.deadline = performance.now() + (durationMs || DURATION_MS);
+    s.el.classList.add("active");
+    s.el.classList.remove("ready");
+    $(side + "-state").textContent = "冷却中";
+    if (typeof charges === "number") {
+      s.charges = charges;
+      setPips(side, charges);
+    }
+  }
+
+  function reset(side) {
+    var s = sides[side];
+    s.active = false;
+    s.deadline = 0;
+    s.el.classList.remove("active", "ready");
+    $(side + "-time").textContent = "待命";
+    $(side + "-unit").textContent = "";
+    $(side + "-state").textContent = s.valid ? "监控中" : "等待识别";
+    $(side + "-bar").style.transform = "scaleX(0)";
+  }
+
+  function cancel(side) {
+    var s = sides[side];
+    if (!s) return;
+    reset(side);
+  }
+
+  function frame(now) {
+    for (var key in sides) {
+      var s = sides[key];
+      if (!s.active) continue;
+      var remain = s.deadline - now;
+      if (remain <= 0) {
+        s.active = false;
+        s.el.classList.remove("active");
+        s.el.classList.add("ready");
+        $(key + "-time").textContent = "可用";
+        $(key + "-unit").textContent = "";
+        $(key + "-state").textContent = "READY";
+        $(key + "-bar").style.transform = "scaleX(0)";
+      } else {
+        $(key + "-time").textContent = (remain / 1000).toFixed(1);
+        $(key + "-unit").textContent = "秒";
+        $(key + "-bar").style.transform = "scaleX(" + (remain / DURATION_MS) + ")";
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function boot() {
+    sides.left.el = $("left");
+    sides.right.el = $("right");
+    requestAnimationFrame(frame);
+    try { window.airscript && window.airscript.call("hud_ready", "1"); } catch (e) {}
+  }
+
+  window.HUD = {
+    valid: function (side, valid, count) { setValid(side, valid, count); },
+    validAll: function (json) {
+      var data = typeof json === "string" ? JSON.parse(json) : json;
+      for (var key in data) setValid(key, !!data[key].valid, data[key].charges);
+    },
+    trigger: function (side, durationMs, charges) { trigger(side, durationMs, charges); },
+    triggerJson: function (json) {
+      var data = typeof json === "string" ? JSON.parse(json) : json;
+      trigger(data.side, data.duration, data.charges);
+    },
+    reset: function (side) { reset(side); },
+    cancel: function (side) { cancel(side); },
+    resetAll: function () { reset("left"); reset("right"); }
+  };
+
+  boot();
+})();
+</script>
+</body>
+</html>

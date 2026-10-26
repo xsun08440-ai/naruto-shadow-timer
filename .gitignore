@@ -1,0 +1,12 @@
+# Generated Android build output and signing credentials
+app_build/
+*.keystore
+*.jks
+*.p12
+
+# Local logs and editor/OS files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
