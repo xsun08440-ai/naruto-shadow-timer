@@ -5,7 +5,7 @@
 <p><b>A computer-vision HUD detector with an independent cooldown state machine</b></p>
 
 <p><a href="README.md">简体中文</a> · <a href="README_EN.md">English</a></p>
-<p><a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest">Download Android APK</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer">Browse source</a></p>
+<p><a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest/download/naruto-shadow-timer.apk">Download Android APK</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest">All release files</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer">Browse source</a></p>
 <p><code>Python</code> <code>OpenCV</code> <code>NumPy</code> <code>AScript Android API</code> <code>Java</code> <code>WebView</code></p>
 
 <img src="preview.png" alt="In-match HUD and independent left/right timer overlays" width="820">
@@ -66,8 +66,8 @@ The Android launcher is written in Java. Intent deep links start or stop the ASc
 
 Open [GitHub Releases](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest) and download:
 
-- **<code>naruto-shadow-timer.apk</code>**: Android launcher.
-- **<code>shadow_timer.as</code>**: AScript recognition project package.
+- **[<code>naruto-shadow-timer.apk</code>](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest/download/naruto-shadow-timer.apk)**: Android launcher.
+- **[<code>shadow_timer.as</code>](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest/download/shadow_timer.as)**: AScript recognition project package.
 
 ### First-time setup
 
@@ -114,5 +114,6 @@ app_preview.png              Launcher UI preview
 <div align="center">
 <a href="README.md">简体中文</a> · <b>English</b>
 </div>
+
 
 
