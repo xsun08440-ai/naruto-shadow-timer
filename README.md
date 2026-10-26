@@ -1,5 +1,7 @@
 # 火影忍者手游 · 左右替身计时器
 
+[简体中文](README.md) | [English](README_EN.md)
+
 **中文简介：** 基于 AScript 与 OpenCV/NumPy 的火影忍者手游左右替身计时器。识别屏幕 HUD 中的替身点变化，并在对应一侧显示独立的 15 秒倒计时。本文档提供中文说明；下方 English summary 为项目简介。
 
 **English summary:** An AScript timer for Naruto Mobile that reads substitution pip changes from the on-screen HUD and starts an independent 15-second countdown for the left or right side. This README includes a Chinese guide and an English project overview.
