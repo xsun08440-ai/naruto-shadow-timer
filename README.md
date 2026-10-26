@@ -5,7 +5,7 @@
 <p><b>基于计算机视觉与状态机的 HUD 识别和独立冷却计时方案</b></p>
 
 <p><a href="README.md">简体中文</a> · <a href="README_EN.md">English</a></p>
-<p><a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest">下载 Android APK</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer">查看源代码</a></p>
+<p><a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest/download/naruto-shadow-timer.apk">直接下载 Android APK</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest">全部下载文件</a> · <a href="https://github.com/xsun08440-ai/naruto-shadow-timer">查看源代码</a></p>
 <p><code>Python</code> <code>OpenCV</code> <code>NumPy</code> <code>AScript Android API</code> <code>Java</code> <code>WebView</code></p>
 
 <img src="preview.png" alt="对局 HUD 与左右独立计时悬浮层" width="820">
@@ -66,8 +66,8 @@ Android 启动器由 Java 编写，通过 Intent 深链启动或停止 AScript �
 
 打开 [GitHub Releases](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest)，下载：
 
-- **<code>naruto-shadow-timer.apk</code>**：Android 桌面启动器。
-- **<code>shadow_timer.as</code>**：AScript 识别工程包。
+- **[<code>naruto-shadow-timer.apk</code>](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest/download/naruto-shadow-timer.apk)**：Android 桌面启动器。
+- **[<code>shadow_timer.as</code>](https://github.com/xsun08440-ai/naruto-shadow-timer/releases/latest/download/shadow_timer.as)**：AScript 识别工程包。
 
 ### 首次配置
 
@@ -114,5 +114,6 @@ app_preview.png              启动器界面图
 <div align="center">
 <b>简体中文</b> · <a href="README_EN.md">Read in English</a>
 </div>
+
 
 
